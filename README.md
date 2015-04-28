@@ -59,6 +59,8 @@ console.log(hash); //4f54bacd20498e42ca5c0f1c275032eb47b740e1a81db5af835d6310fc6
 
 ### new Hash(algorithm) - Hash multiple things at once.
 algorithm = 'sha1', 'md5', 'sha256', or 'sha512'
+* **hash(anything)** - add anything to the hash calculation
+* **getValue()** get the hash value of everything added to the Hash object
 ```javascript
 var Hash = require('hash-anything').Hash;
 
