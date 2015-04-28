@@ -1,6 +1,6 @@
 {
   "name": "hash-anything",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Hash any Javascript primitive or object",
   "main": "index.js",
   "scripts": {
@@ -12,9 +12,10 @@
   },
   "keywords": [
     "hash",
+    "hashing",
+    "xxhash",
     "object",
-    "primate",
-    "xxhash"
+    "primitive"
   ],
   "author": "Ben Page",
   "license": "MIT",
