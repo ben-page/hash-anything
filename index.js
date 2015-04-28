@@ -1,8 +1,6 @@
 'use strict';
-var XXHash = require('xxhash');
+/** @module hash-anything **/
 var Buffer = require('buffer').Buffer;
-
-var SEED = 0x6d4e9ec6;
 
 var TYPE = Object.freeze({
     Array: 1,
@@ -20,10 +18,24 @@ var TYPE = Object.freeze({
     NegativeInfinity: 13
 });
 
-function Hash(includeFunc) {
-    this.includeFunc = includeFunc;
+function Hash(algorithm) {
+    if (!(this instanceof Hash))
+        throw new Error('new must be used when calling Hash()');
+    if (!algorithm)
+        throw new Error('algorithm is required.');
+
     this._buffer = new Buffer(128);
     this._index = 0;
+    switch (typeof algorithm) {
+        case 'string':
+            this._algorithm = algorithm.toLowerCase();
+            break;
+        case 'function':
+            this._algorithm = algorithm;
+            break;
+        default:
+            throw new Error('unrecognized hash algorithm')
+    }
 }
 
 function resizeBuffer() {
@@ -66,9 +78,22 @@ function writeString(v) {
 }
 
 Hash.prototype.getValue = function() {
-    var hasher = new XXHash(SEED);
-    hasher.update(this._buffer.slice(0, this._index));
-    return hasher.digest();
+    var hasher,
+        buffer = this._buffer.slice(0, this._index);
+
+    switch (this._algorithm) {
+        case 'sha1':
+        case 'md5':
+        case 'sha256':
+        case 'sha512':
+            hasher = require('crypto').createHash(this._algorithm);
+            hasher.update(buffer);
+            return hasher.digest('hex');
+        default:
+            if (typeof this._algorithm === 'function')
+               return this._algorithm(buffer);
+            throw new Error('unrecognized hash algorithm: ' + this._algorithm.toString())
+    }
 };
 
 Hash.prototype.hash = function(obj) {
@@ -77,8 +102,6 @@ Hash.prototype.hash = function(obj) {
 };
 
 function add(obj) {
-    if (this.includeFunc && !this.includeFunc(obj))
-        return;
     var className = Object.prototype.toString.call(obj);
     switch (className) {
         case '[object Array]':
@@ -203,10 +226,46 @@ function addUndefined() {
 }
 
 module.exports = {
+    /**
+     * Constructor for Hash object
+     * @param algorithm {String} - algorithm to use to calculate the hash: 'sha1', 'md5', 'sha256', 'sha512'
+     * @constructor
+     */
     Hash: Hash,
-    hash: function (obj) {
-        var hash = new Hash();
-        hash.hash(obj);
+    /**
+     * Returns the SHA1 hash of anything
+     * @param anything
+     */
+    sha1: function (anything) {
+        var hash = new Hash('sha1');
+        hash.hash(anything);
+        return hash.getValue();
+    },
+    /**
+     * Returns the MD5 hash of anything
+     * @param anything
+     */
+    md5: function (anything) {
+        var hash = new Hash('md5');
+        hash.hash(anything);
+        return hash.getValue();
+    },
+    /**
+     * Returns the SHA256 hash of anything
+     * @param anything
+     */
+    sha256: function (anything) {
+        var hash = new Hash('sha256');
+        hash.hash(anything);
+        return hash.getValue();
+    },
+    /**
+     * Returns the SHA512 hash of anything
+     * @param anything
+     */
+    sha512: function (anything) {
+        var hash = new Hash('sha512');
+        hash.hash(anything);
         return hash.getValue();
     }
 };

@@ -1,6 +1,6 @@
 {
   "name": "hash-anything",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Hash any Javascript primitive or object",
   "main": "index.js",
   "scripts": {
@@ -13,7 +13,6 @@
   "keywords": [
     "hash",
     "hashing",
-    "xxhash",
     "object",
     "primitive"
   ],
@@ -22,8 +21,5 @@
   "homepage": "https://github.com/ben-page/hash-anything",
   "bugs": {
     "url": "https://github.com/ben-page/hash-anything/issues"
-  },
-  "dependencies": {
-    "xxhash": "^0.2.1"
   }
 }
