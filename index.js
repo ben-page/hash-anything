@@ -101,6 +101,11 @@ Hash.prototype.hash = function(obj) {
     return this;
 };
 
+Hash.prototype.clear = function(obj) {
+    this._index = 0;
+    return this;
+};
+
 function add(obj) {
     var className = Object.prototype.toString.call(obj);
     switch (className) {

@@ -194,4 +194,15 @@ describe('hash', function() {
         assert.equal(sha1(text1), sha1(dup));
         assert.notEqual(sha1(text1), sha1(text2));
     });
+
+    it('clear()', function () {
+        var hash = new Hash('sha1');
+
+        var value1 = hash.hash(1234).getValue();
+        var value2 = hash.hash('something').getValue();
+        var value3 = hash.clear().hash(1234).getValue();
+
+        assert.equal(value1, value3);
+        assert.notEqual(value1, value2);
+    });
 });
