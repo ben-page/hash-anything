@@ -1,6 +1,6 @@
 {
   "name": "hash-anything",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Hash any Javascript primitive or object",
   "main": "index.js",
   "scripts": {
@@ -16,7 +16,10 @@
     "object",
     "primitive"
   ],
-  "author": "Ben Page",
+  "author": { 
+	"name": "Ben Page",
+	"email": "ben.page@openreign.com"
+  },
   "license": "MIT",
   "homepage": "https://github.com/ben-page/hash-anything",
   "bugs": {
