@@ -1,6 +1,7 @@
 'use strict';
 /** @module hash-anything **/
 var Buffer = require('buffer').Buffer;
+var createHash = require('crypto').createHash;
 
 var TYPE = Object.freeze({
     Array: 1,
@@ -86,7 +87,7 @@ Hash.prototype.getValue = function() {
         case 'md5':
         case 'sha256':
         case 'sha512':
-            hasher = require('crypto').createHash(this._algorithm);
+            hasher = createHash(this._algorithm);
             hasher.update(buffer);
             return hasher.digest('hex');
         default:

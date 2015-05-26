@@ -2,7 +2,7 @@
   "name": "hash-anything",
   "version": "1.0.4",
   "description": "Hash any Javascript primitive or object",
-  "main": "index.js",
+  "main": "js/main/hash-anything.js",
   "scripts": {
     "test": "test/test.js"
   },
@@ -16,13 +16,19 @@
     "object",
     "primitive"
   ],
-  "author": { 
-	"name": "Ben Page",
-	"email": "ben.page@openreign.com"
+  "author": {
+    "name": "Ben Page",
+    "email": "ben.page@openreign.com"
   },
   "license": "MIT",
   "homepage": "https://github.com/ben-page/hash-anything",
   "bugs": {
     "url": "https://github.com/ben-page/hash-anything/issues"
+  },
+  "scripts": {
+    "browserify": "browserify js/main/hash-anything.js -o js/browser/hash-anything.js",
+	"uglify": "uglifyjs --compress --mangle -o js/browser/hash-anything.min.js -- js/browser/hash-anything.js",
+    "preuglify": "npm run browserify",
+    "build": "npm run uglify"
   }
 }
