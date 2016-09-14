@@ -1,6 +1,6 @@
 var assert = require('assert');
-var Hash = require('../index.js').Hash;
-var sha1 = require('../index.js').sha1;
+var Hash = require('../js/main/hash-anything').Hash;
+var sha1 = require('../js/main/hash-anything').sha1;
 
 describe('hash', function() {
     it('integer', function () {
@@ -56,6 +56,8 @@ describe('hash', function() {
         var d2 = new Date(now + 1000);
 
         assert.equal(sha1(d1), sha1(dup));
+        var i = sha1(d1);
+        var j = sha1(d2);
         assert.notEqual(sha1(d1), sha1(d2));
     });
 

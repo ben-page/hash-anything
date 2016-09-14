@@ -16,7 +16,16 @@ var TYPE = Object.freeze({
     Undefined: 10,
     NaN : 11,
     PositiveInfinity: 12,
-    NegativeInfinity: 13
+    NegativeInfinity: 13,
+    Int8Array: 14,
+    Uint8Array: 15,
+    Uint8ClampedArray: 16,
+    Int16Array: 17,
+    Uint16Array: 18,
+    Int32Array: 19,
+    Uint32Array: 20,
+    Float32Array: 21,
+    Float64Array: 22,
 });
 
 function Hash(algorithm) {
@@ -39,49 +48,10 @@ function Hash(algorithm) {
     }
 }
 
-function resizeBuffer() {
-    var buffer = new Buffer(this._buffer.length * 2);
-    this._buffer.copy(buffer);
-    this._buffer = buffer;
-}
-
-function writeUInt8(v) {
-    if (this._index + 1 >= this._buffer.length)
-        resizeBuffer.call(this);
-
-    this._buffer.writeUInt8(v, this._index++);
-}
-
-function writeUInt64LE(v) {
-    if (this._index + 8 >= this._buffer.length)
-        resizeBuffer.call(this);
-
-    this._buffer.writeUInt32LE((v << 32) >>> 0, this._index);
-    this._index += 4;
-    this._buffer.writeUInt32LE(v >>> 0, this._index);
-    this._index += 4;
-}
-
-function writeDoubleLE(v) {
-    if (this._index + 8 >= this._buffer.length)
-        resizeBuffer.call(this);
-
-    this._buffer.writeDoubleLE(v, this._index);
-    this._index += 8;
-}
-
-function writeString(v) {
-    while (this._index + v.length >= this._buffer.length)
-        resizeBuffer.call(this);
-
-    this._buffer.write(v, this._index);
-    this._index += v.length;
-}
-
-Hash.prototype.getValue = function() {
+Hash.prototype.getValue = function () {
     var hasher,
         buffer = this._buffer.slice(0, this._index);
-
+    
     switch (this._algorithm) {
         case 'sha1':
         case 'md5':
@@ -92,144 +62,332 @@ Hash.prototype.getValue = function() {
             return hasher.digest('hex');
         default:
             if (typeof this._algorithm === 'function')
-               return this._algorithm(buffer);
+                return this._algorithm(buffer);
             throw new Error('unrecognized hash algorithm: ' + this._algorithm.toString())
     }
 };
 
-Hash.prototype.hash = function(obj) {
-    add.call(this, obj);
+Hash.prototype.hash = function (obj) {
+    this._add(obj);
     return this;
 };
 
-Hash.prototype.clear = function(obj) {
+Hash.prototype.clear = function (obj) {
     this._index = 0;
     return this;
 };
 
-function add(obj) {
+Hash.prototype._resizeBuffer = function() {
+    var buffer = new Buffer(this._buffer.length * 2);
+    this._buffer.copy(buffer);
+    this._buffer = buffer;
+};
+
+Hash.prototype._writeInt8 = function(v) {
+    if (this._index + 1 >= this._buffer.length)
+        this._resizeBuffer();
+    
+    this._buffer.writeUInt8(v, this._index++);
+};
+
+Hash.prototype._writeUInt8 = function(v) {
+    if (this._index + 1 >= this._buffer.length)
+        this._resizeBuffer();
+    
+    this._buffer.writeUInt8(v, this._index++);
+};
+
+Hash.prototype._writeInt16LE = function(v) {
+    if (this._index + 2 >= this._buffer.length)
+        this._resizeBuffer();
+    
+    this._buffer.writeUInt16LE(v, this._index);
+    this._index += 2;
+};
+
+Hash.prototype._writeUInt16LE = function(v) {
+    if (this._index + 2 >= this._buffer.length)
+        this._resizeBuffer();
+    
+    this._buffer.writeUInt16LE(v, this._index);
+    this._index += 2;
+};
+
+Hash.prototype._writeInt32LE = function(v) {
+    if (this._index + 4 >= this._buffer.length)
+        this._resizeBuffer();
+    
+    this._buffer.writeUInt32LE(v, this._index);
+    this._index += 4;
+};
+
+Hash.prototype._writeUInt32LE = function(v) {
+    if (this._index + 4 >= this._buffer.length)
+        this._resizeBuffer();
+    
+    this._buffer.writeUInt32LE(v, this._index);
+    this._index += 4;
+};
+
+Hash.prototype._writeUInt64LE = function(v) {
+    if (this._index + 8 >= this._buffer.length)
+        this._resizeBuffer();
+
+    this._buffer.writeUInt32LE((v << 32) >>> 0, this._index);
+    this._index += 4;
+    this._buffer.writeUInt32LE(v >>> 0, this._index);
+    this._index += 4;
+};
+
+Hash.prototype._writeFloatLE = function(v) {
+    if (this._index + 4 >= this._buffer.length)
+        this._resizeBuffer();
+    
+    this._buffer.writeFloatLE(v, this._index);
+    this._index += 8;
+};
+
+Hash.prototype._writeDoubleLE = function(v) {
+    if (this._index + 8 >= this._buffer.length)
+        this._resizeBuffer();
+    
+    this._buffer.writeDoubleLE(v, this._index);
+    this._index += 8;
+};
+
+Hash.prototype._writeString = function(v) {
+    while (this._index + v.length >= this._buffer.length)
+        this._resizeBuffer();
+
+    this._buffer.write(v, this._index);
+    this._index += v.length;
+};
+
+Hash.prototype._add = function(obj) {
     var className = Object.prototype.toString.call(obj);
     switch (className) {
         case '[object Array]':
-            addArray.call(this, obj);
+            this._addArray(obj);
             return;
         case '[object Boolean]':
-            addBoolean.call(this, obj);
+            this._addBoolean(obj);
             return;
         case '[object Date]':
-            addDate.call(this, obj);
+            this._addDate(obj);
             return;
         case '[object Function]':
-            addFunction.call(this, obj);
+            this._addFunction(obj);
             return;
         case '[object Null]':
-            addNull.call(this);
+            this._addNull();
             return;
         case '[object Number]':
-            addNumber.call(this, obj);
+            this._addNumber(obj);
             return;
         case '[object Object]':
-            addObject.call(this, obj);
+            this._addObject(obj);
             return;
         case '[object RegExp]':
-            addRegExp.call(this, obj);
+            this._addRegExp(obj);
             return;
         case '[object String]':
-            addString.call(this, obj);
+            this._addString(obj);
             return;
         case '[object Undefined]':
-            addUndefined.call(this);
+            this._addUndefined();
+            return;
+        case '[object Int8Array]':
+            this._addInt8Array(obj);
+            return;
+        case '[object Uint8Array]':
+            this._addUint8Array(obj);
+            return;
+        case '[object Uint8ClampedArray]':
+            this._addUint8ClampedArray(obj);
+            return;
+        case '[object Int16Array]':
+            this._addInt16Array(obj);
+            return;
+        case '[object Uint16Array]':
+            this._addUint16Array(obj);
+            return;
+        case '[object Int32Array]':
+            this._addInt32Array(obj);
+            return;
+        case '[object Uint32Array]':
+            this._addUint32Array(obj);
+            return;
+        case '[object Float32Array]':
+            this._addFloat32Array(obj);
+            return;
+        case '[object Float64Array]':
+            this._addFloat64Array(obj);
             return;
         default:
-            throw new Error('class ' + className + ' is not supported.');
+            this._addObject(obj);
+            return;
     }
-}
+};
 
-function addArray(arr) {
-    writeUInt8.call(this, TYPE.Array);
+Hash.prototype._addArray = function(arr) {
+    this._writeUInt8(TYPE.Array);
 
     var l = arr.length;
     for (var i = 0; i < l; i++) {
-        addNumber.call(this, i);
-        add.call(this, arr[i]);
+        this._addNumber(i);
+        this._add(arr[i]);
     }
-}
+};
 
-function addBoolean(bool) {
-    writeUInt8.call(this, TYPE.Boolean);
-    writeUInt8.call(this, !!bool ? 0xF : 0xFF);
-}
+Hash.prototype._addInt8Array = function(arr) {
+    this._writeUInt8(TYPE.Int8Array);
+    
+    var l = arr.length;
+    for (var i = 0; i < l; i++)
+        this._writeInt8(arr[i]);
+};
 
-function addDate(date) {
-    writeUInt8.call(this, TYPE.Date);
-    writeUInt64LE.call(this,+date);
-}
+Hash.prototype._addUint8Array = function(arr) {
+    this._writeUInt8(TYPE.Uint8Array);
+    
+    var l = arr.length;
+    for (var i = 0; i < l; i++)
+        this._writeUInt8(arr[i]);
+};
 
-function addFunction(func) {
-    writeUInt8.call(this, TYPE.Function);
-    writeString.call(this, func.toString());
+Hash.prototype._addUint8ClampedArray = function(arr) {
+    this._writeUInt8(TYPE.Uint8ClampedArray);
+    
+    var l = arr.length;
+    for (var i = 0; i < l; i++)
+        this._writeUInt8(arr[i]);
+};
 
-    if (!!func.prototype)
-        addObject.call(this, func.prototype);
-}
+Hash.prototype._addInt16Array = function(arr) {
+    this._writeUInt8(TYPE.Int16Array);
+    
+    var l = arr.length;
+    for (var i = 0; i < l; i++)
+        this._writeInt16LE(arr[i]);
+};
 
-function addNull() {
-    writeUInt8.call(this, TYPE.Null);
-}
+Hash.prototype._addUint16Array = function(arr) {
+    this._writeUInt8(TYPE.Uint16Array);
+    
+    var l = arr.length;
+    for (var i = 0; i < l; i++)
+        this._writeUInt16LE(arr[i]);
+};
 
-function addNumber(number) {
+Hash.prototype._addInt32Array = function(arr) {
+    this._writeUInt8(TYPE.Int32Array);
+    
+    var l = arr.length;
+    for (var i = 0; i < l; i++)
+        this._writeInt32LE(arr[i]);
+};
+
+Hash.prototype._addUint32Array = function(arr) {
+    this._writeUInt8(TYPE.Uint32Array);
+    
+    var l = arr.length;
+    for (var i = 0; i < l; i++)
+        this._writeUInt32LE(arr[i]);
+};
+
+Hash.prototype._addFloat32Array = function(arr) {
+    this._writeUInt8(TYPE.Float32Array);
+    
+    var l = arr.length;
+    for (var i = 0; i < l; i++)
+        this._writeFloatLE(arr[i]);
+};
+
+Hash.prototype._addFloat64Array = function(arr) {
+    this._writeUInt8(TYPE.Float64Array);
+    
+    var l = arr.length;
+    for (var i = 0; i < l; i++)
+        this._writeDoubleLE(arr[i]);
+};
+
+Hash.prototype._addBoolean = function(bool) {
+    this._writeUInt8(TYPE.Boolean);
+    this._writeUInt8(bool ? 0xF : 0xFF);
+};
+
+Hash.prototype._addDate = function(date) {
+    this._writeUInt8(TYPE.Date);
+    this._writeUInt64LE(+date);
+};
+
+Hash.prototype._addFunction = function(func) {
+    this._writeUInt8(TYPE.Function);
+    this._writeString(func.toString());
+    
+    var proto = Object.getPrototypeOf(func);
+    if (proto && proto !== Object.prototype)
+        this._addObject(proto);
+};
+
+Hash.prototype._addNull = function() {
+    this._writeUInt8(TYPE.Null);
+};
+
+Hash.prototype._addNumber = function(number) {
     if (isFinite(number)) {
         if (Math.floor(number) === number) { //integers
-            writeUInt8.call(this, TYPE.Number);
-            writeUInt64LE.call(this, number);
+            this._writeUInt8(TYPE.Number);
+            this._writeUInt64LE(number);
         } else { //decimal & float numbers
-            writeUInt8.call(this, TYPE.Number);
-            writeDoubleLE.call(this, number);
+            this._writeUInt8(TYPE.Number);
+            this._writeDoubleLE(number);
         }
     } else {
-        if (isNaN(number)) {
-            writeUInt8.call(this, TYPE.NaN);
-        } else if (number === Number.POSITIVE_INFINITY) {
-            writeUInt8.call(this, TYPE.PositiveInfinity );
-        } else if (number === Number.NEGATIVE_INFINITY) {
-            writeUInt8.call(this, TYPE.NegativeInfinity);
-        } else {
+        if (isNaN(number))
+            this._writeUInt8(TYPE.NaN);
+        else if (number === Number.POSITIVE_INFINITY)
+            this._writeUInt8(TYPE.PositiveInfinity );
+        else if (number === Number.NEGATIVE_INFINITY)
+            this._writeUInt8(TYPE.NegativeInfinity);
+        else
             throw new Error('unhandled infinite number');
-        }
     }
 }
 
-function addObject(obj) {
-    writeUInt8.call(this, TYPE.Object);
+Hash.prototype._addObject = function(obj) {
+    this._writeUInt8(TYPE.Object);
 
     for (var propertyName in obj) {
         if (obj.hasOwnProperty(propertyName)) {
-            if (this.includeFunc)
+            if (this.includeFunc) {
                 if (!this.includeFunc(obj, propertyName))
                     continue;
+            }
 
-            addString.call(this, propertyName);
-            add.call(this, obj[propertyName]);
+            this._addString(propertyName);
+            this._add(obj[propertyName]);
         }
     }
+    
+    var proto = Object.getPrototypeOf(obj);
+    if (proto && proto !== Object.prototype)
+        this._addObject(proto);
+};
 
-    if (!!obj.__proto__)
-        addObject.call(this, obj.__proto__);
-}
+Hash.prototype._addRegExp = function(regex) {
+    this._writeUInt8(TYPE.Regex);
+    this._writeString(regex.toString());
+};
 
-function addRegExp(regex) {
-    writeUInt8.call(this, TYPE.Regex);
-    writeString.call(this, regex.toString());
-}
+Hash.prototype._addString = function(str) {
+    this._writeUInt8(TYPE.String);
+    this._writeString(str);
+};
 
-function addString(str) {
-    writeUInt8.call(this, TYPE.String);
-    writeString.call(this, str);
-}
-
-function addUndefined() {
-    writeUInt8.call(this, TYPE.Undefined);
-}
+Hash.prototype._addUndefined = function() {
+    this._writeUInt8(TYPE.Undefined);
+};
 
 module.exports = {
     /**

@@ -3,9 +3,6 @@
   "version": "1.0.4",
   "description": "Hash any Javascript primitive or object",
   "main": "js/main/hash-anything.js",
-  "scripts": {
-    "test": "test/test.js"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/ben-page/hash-anything"
@@ -26,9 +23,15 @@
     "url": "https://github.com/ben-page/hash-anything/issues"
   },
   "scripts": {
-    "browserify": "browserify js/main/hash-anything.js -o js/browser/hash-anything.js",
-	"uglify": "uglifyjs --compress --mangle -o js/browser/hash-anything.min.js -- js/browser/hash-anything.js",
+    "test": "node_modules/.bin/mocha test/test.js",
+    "browserify": "node_modules/.bin/browserify js/main/hash-anything.js -o js/browser/hash-anything.js",
+    "uglify": "node_modules/.bin/uglifyjs --compress --mangle -o js/browser/hash-anything.min.js -- js/browser/hash-anything.js",
     "preuglify": "npm run browserify",
     "build": "npm run uglify"
+  },
+  "devDependencies": {
+    "browserify": "^13.1.0",
+    "mocha": "^3.0.2",
+    "uglify": "^0.1.5"
   }
 }
