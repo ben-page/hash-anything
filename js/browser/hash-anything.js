@@ -41,10 +41,10 @@ class Hash {
 
         this._buffer = Buffer.alloc(128);
         this._index = 0;
-        algorithm = algorithm.toLowerCase();
 
         switch (typeof algorithm) {
             case 'string':
+                algorithm = algorithm.toLowerCase();
                 for (const hash of hashes) {
                     if (hash.toLowerCase() === algorithm) {
                         this._algorithm = hash;
@@ -79,7 +79,7 @@ class Hash {
         return this;
     }
 
-    clear(obj) {
+    clear() {
         this._index = 0;
         return this;
     }
