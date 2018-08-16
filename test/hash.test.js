@@ -1,5 +1,6 @@
 const Hash = require('../js/main/hash-anything').Hash;
 const sha1 = require('../js/main/hash-anything').sha1;
+const XXHash = require('xxhash');
 
 test('integer', function () {
     const i1 = 1234;
@@ -204,4 +205,20 @@ test('clear()', function () {
 
     expect(value1).toBe(value3);
     expect(value1).not.toBe(value2);
+});
+
+
+test('external hash', function () {
+    function doHash(buf) {
+        const hasher = new XXHash(0xb911be95);
+        hasher.update(buf);
+        return hasher.digest('hex');
+    }
+
+    const hash1 = new Hash(doHash).hash(123).hash('string').getValue();
+    const dup = new Hash(doHash).hash(123).hash('string').getValue();
+    const hash2 = new Hash(doHash).hash(1234).hash('string').getValue();
+
+    expect(hash1).toBe(dup);
+    expect(hash1).not.toBe(hash2);
 });
