@@ -30,8 +30,8 @@
     "build": "npm run uglify"
   },
   "devDependencies": {
-    "browserify": "^13.1.0",
-    "mocha": "^3.0.2",
+    "browserify": "^16.2.2",
+    "jest": "^23.5.0",
     "uglify": "^0.1.5"
   }
 }
