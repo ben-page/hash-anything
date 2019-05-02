@@ -1,6 +1,6 @@
 {
   "name": "hash-anything",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Hash any Javascript primitive or object",
   "main": "js/main/hash-anything.js",
   "repository": {
@@ -30,9 +30,9 @@
     "build": "npm run uglify"
   },
   "devDependencies": {
-    "browserify": "^16.2.2",
-    "jest": "^23.5.0",
+    "browserify": "^16.2.3",
+    "jest": "^23.6.0",
     "uglify-es": "^3.3.9",
-    "xxhash": "^0.2.4"
+    "xxhash": "https://github.com/ben-page/node-xxhash.git#node-12"
   }
 }
