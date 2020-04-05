@@ -30,9 +30,9 @@
     "build": "npm run uglify"
   },
   "devDependencies": {
-    "browserify": "^16.2.3",
-    "jest": "^23.6.0",
+    "browserify": "^16.5.1",
+    "jest": "^25.2.7",
     "uglify-es": "^3.3.9",
-    "xxhash": "https://github.com/ben-page/node-xxhash.git#node-12"
+    "xxhash": "^0.3.0"
   }
 }
