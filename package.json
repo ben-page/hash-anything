@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "browserify": "^16.5.1",
-    "jest": "^25.2.7",
+    "jest": "^26.0.1",
     "uglify-es": "^3.3.9",
     "xxhash": "^0.3.0"
   }
