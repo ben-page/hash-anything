@@ -1,5 +1,5 @@
 # hash-anything
-Hash any Javascript primitive or object.
+Hash (almost) any Javascript primitive or object.
 
 ### sha1(anything)
 ```javascript
@@ -100,3 +100,21 @@ var hash = new Hash(doHash)
 
 console.log(hash.getValue()); //3804156080
 ```
+
+### Supported Types ###
+* Primatives: Boolean, Number, String, BigInt, undefined, and Symbol
+* Built-In Objects: Date, RegExp, Null, Object, Function, TypedArrays(Uint16Array, etc.), Map, Set,
+GeneratorFunction, AsyncFunction
+* Global Properties: Nan, Infinity
+
+### Unsupported Types ###
+* WeakMap
+* WeakSet
+* Promise
+* DataView
+
+### Circular References ###
+Currently, `hash-anything` does not support circular references. They will cause a stack overflow stack overflow. 
+
+### Note on New Types ###
+When a new built-in type is added to Javascript, `hash-anything` should be updated to support it specifically. Otherwise, the new type will be treated like any other user-defined objects. This may not produce ideal results..

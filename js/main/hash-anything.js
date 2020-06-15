@@ -29,6 +29,12 @@ const TYPE = Object.freeze({
     Uint32Array: 20,
     Float32Array: 21,
     Float64Array: 22,
+    Symbol: 23,
+    BigInt: 24,
+    Map: 25,
+    Set: 26,
+    GeneratorFunction: 27,
+    AsyncFunction: 28
 });
 
 class Hash {
@@ -84,7 +90,7 @@ class Hash {
     }
 
     _resizeBuffer() {
-        var buffer = Buffer.alloc(this._buffer.length * 2);
+        const buffer = Buffer.alloc(this._buffer.length * 2);
         this._buffer.copy(buffer);
         this._buffer = buffer;
     }
@@ -169,8 +175,16 @@ class Hash {
         this._index += v.length;
     }
 
+    _writeBigInt(v) {
+        while (this._index + 8 >= this._buffer.length)
+            this._resizeBuffer();
+
+        this._buffer.writeBigUInt64LE(v, this._index);
+        this._index += 8;
+    }
+
     _add(obj) {
-        var className = Object.prototype.toString.call(obj);
+        const className = Object.prototype.toString.call(obj);
         switch (className) {
             case '[object Array]':
                 this._addArray(obj);
@@ -229,6 +243,36 @@ class Hash {
             case '[object Float64Array]':
                 this._addFloat64Array(obj);
                 return;
+            case '[object Symbol]':
+                this._addSymbol(obj);
+                return;
+            case '[object BigInt]':
+                this._addBigInt(obj);
+                return;
+            case '[object Map]':
+                this._addMap(obj);
+                return;
+            case '[object Set]':
+                this._addSet(obj);
+                return;
+            case '[object GeneratorFunction]':
+                this._addGeneratorFunction(obj);
+                return;
+            case '[object AsyncFunction]':
+                this._addAsyncFunction(obj);
+                return;
+            case '[object WeakMap]':
+                throw new TypeError('WeakMap can not be hashed.');
+            case '[object WeakSet]':
+                throw new TypeError('WeakSet can not be hashed.');
+            case '[object Promise]':
+                throw new TypeError('Promise can not be hashed.');
+            case '[object Generator]':
+                throw new TypeError('Generator can not be hashed.');
+            case '[object DataView]':
+                throw new TypeError('DataView can not be hashed.');
+            case '[object Proxy]':
+                throw new TypeError('Proxy can not be hashed.');
             default:
                 this._addObject(obj);
                 return;
@@ -238,8 +282,8 @@ class Hash {
     _addArray(arr) {
         this._writeUInt8(TYPE.Array);
 
-        var l = arr.length;
-        for (var i = 0; i < l; i++) {
+        const l = arr.length;
+        for (let i = 0; i < l; i++) {
             this._addNumber(i);
             this._add(arr[i]);
         }
@@ -248,72 +292,63 @@ class Hash {
     _addInt8Array(arr) {
         this._writeUInt8(TYPE.Int8Array);
 
-        var l = arr.length;
-        for (var i = 0; i < l; i++)
+        for (let i = 0; i < arr.length; i++)
             this._writeInt8(arr[i]);
     }
 
     _addUint8Array(arr) {
         this._writeUInt8(TYPE.Uint8Array);
 
-        var l = arr.length;
-        for (var i = 0; i < l; i++)
+        for (let i = 0; i < arr.length; i++)
             this._writeUInt8(arr[i]);
     }
 
     _addUint8ClampedArray(arr) {
         this._writeUInt8(TYPE.Uint8ClampedArray);
 
-        var l = arr.length;
-        for (var i = 0; i < l; i++)
+        for (let i = 0; i < arr.length; i++)
             this._writeUInt8(arr[i]);
     }
 
     _addInt16Array(arr) {
         this._writeUInt8(TYPE.Int16Array);
 
-        var l = arr.length;
-        for (var i = 0; i < l; i++)
+        for (let i = 0; i < arr.length; i++)
             this._writeInt16LE(arr[i]);
     }
 
     _addUint16Array(arr) {
         this._writeUInt8(TYPE.Uint16Array);
 
-        var l = arr.length;
-        for (var i = 0; i < l; i++)
+        for (let i = 0; i < arr.length; i++)
             this._writeUInt16LE(arr[i]);
     }
 
     _addInt32Array(arr) {
         this._writeUInt8(TYPE.Int32Array);
 
-        var l = arr.length;
-        for (var i = 0; i < l; i++)
+        for (let i = 0; i < arr.length; i++)
             this._writeInt32LE(arr[i]);
     }
 
     _addUint32Array(arr) {
         this._writeUInt8(TYPE.Uint32Array);
 
-        var l = arr.length;
-        for (var i = 0; i < l; i++)
+        for (let i = 0; i < arr.length; i++)
             this._writeUInt32LE(arr[i]);
     }
 
     _addFloat32Array(arr) {
         this._writeUInt8(TYPE.Float32Array);
 
-        var l = arr.length;
-        for (var i = 0; i < l; i++)
+        for (let i = 0; i < arr.length; i++)
             this._writeFloatLE(arr[i]);
     }
 
     _addFloat64Array(arr) {
         this._writeUInt8(TYPE.Float64Array);
 
-        var l = arr.length;
-        for (var i = 0; i < l; i++)
+        for (let i = 0; i < arr.length; i++)
             this._writeDoubleLE(arr[i]);
     }
 
@@ -331,7 +366,25 @@ class Hash {
         this._writeUInt8(TYPE.Function);
         this._writeString(func.toString());
 
-        var proto = Object.getPrototypeOf(func);
+        const proto = Object.getPrototypeOf(func);
+        if (proto && proto !== Object.prototype)
+            this._addObject(proto);
+    }
+
+    _addGeneratorFunction(func) {
+        this._writeUInt8(TYPE.GeneratorFunction);
+        this._writeString(func.toString());
+
+        const proto = Object.getPrototypeOf(func);
+        if (proto && proto !== Object.prototype)
+            this._addObject(proto);
+    }
+
+    _addAsyncFunction(func) {
+        this._writeUInt8(TYPE.AsyncFunction);
+        this._writeString(func.toString());
+
+        const proto = Object.getPrototypeOf(func);
         if (proto && proto !== Object.prototype)
             this._addObject(proto);
     }
@@ -364,7 +417,7 @@ class Hash {
     _addObject(obj) {
         this._writeUInt8(TYPE.Object);
 
-        for (var propertyName in obj) {
+        for (let propertyName in obj) {
             if (obj.hasOwnProperty(propertyName)) {
                 if (this.includeFunc) {
                     if (!this.includeFunc(obj, propertyName))
@@ -376,13 +429,13 @@ class Hash {
             }
         }
 
-        var proto = Object.getPrototypeOf(obj);
+        const proto = Object.getPrototypeOf(obj);
         if (proto && proto !== Object.prototype)
             this._addObject(proto);
     }
 
     _addRegExp(regex) {
-        this._writeUInt8(TYPE.Regex);
+        this._writeUInt8(TYPE.RegExp);
         this._writeString(regex.toString());
     }
 
@@ -393,6 +446,30 @@ class Hash {
 
     _addUndefined() {
         this._writeUInt8(TYPE.Undefined);
+    }
+
+    _addSymbol(symbol) {
+        this._writeUInt8(TYPE.Symbol);
+        this._writeString(symbol.description);
+    }
+
+    _addBigInt(bigInt) {
+        this._writeUInt8(TYPE.BigInt);
+        this._writeBigInt(bigInt);
+    }
+
+    _addMap(map) {
+        this._writeUInt8(TYPE.Map);
+        for (let [key, value] of map) {
+            this._add(key);
+            this._add(value);
+        }
+    }
+
+    _addSet(set) {
+        this._writeUInt8(TYPE.Set);
+        for (let item of set)
+            this._add(item);
     }
 }
 

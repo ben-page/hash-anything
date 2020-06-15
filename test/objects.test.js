@@ -131,3 +131,71 @@ test('Null', function () {
     expect(sha1(n1)).toBe(sha1(dup));
     expect(sha1(n1)).not.toBe(sha1(n2));
 });
+
+test('Symbols', function () {
+    const s1 = Symbol('s1');
+    const dup = Symbol('s1');
+    const s2 = Symbol('s2');
+
+    expect(sha1(s1)).toBe(sha1(dup));
+    expect(sha1(s1)).not.toBe(sha1(s2));
+});
+
+test('BigInt', function () {
+    const b1 = 9007199254740991n;
+    const dup = BigInt(9007199254740991);
+    const b2 = 1234n;
+
+    expect(sha1(b1)).toBe(sha1(dup));
+    expect(sha1(b1)).not.toBe(sha1(b2));
+});
+
+test('Map', function () {
+    const m1 = new Map();
+    m1.set(1, 'one');
+    m1.set(2, 'two');
+    const dup = new Map();
+    dup.set(1, 'one');
+    dup.set(2, 'two');
+    const m2 = new Map();
+    m2.set(2, 'two');
+    m2.set(1, 'one');
+
+    expect(sha1(m1)).toBe(sha1(dup));
+    expect(sha1(m1)).not.toBe(sha1(m2));
+});
+
+test('Set', function () {
+    const s1 = new Set();
+    s1.add(1);
+    s1.add(2);
+    const dup = new Set();
+    dup.add(1);
+    dup.add(2);
+    const s2 = new Set();
+    s2.add(2);
+    s2.add(1);
+    const a2 = [ 1, 2 ];
+
+    expect(sha1(s1)).toBe(sha1(dup));
+    expect(sha1(s1)).not.toBe(sha1(s2));
+    expect(sha1(s1)).not.toBe(sha1(a2)); //ensure array doesn't match
+});
+
+test('Generator Function', function () {
+    const n1 = function*(){};
+    const dup = function*(){};
+    const n2 = function*(){let i = 0;};
+
+    expect(sha1(n1)).toBe(sha1(dup));
+    expect(sha1(n1)).not.toBe(sha1(n2));
+});
+
+test('Async Function', function () {
+    const n1 = async function(){};
+    const dup = async function(){};
+    const n2 = async function(){let i = 0;};
+
+    expect(sha1(n1)).toBe(sha1(dup));
+    expect(sha1(n1)).not.toBe(sha1(n2));
+});
