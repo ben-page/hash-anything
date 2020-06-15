@@ -114,7 +114,7 @@ GeneratorFunction, AsyncFunction
 * DataView
 
 ### Circular References ###
-Currently, `hash-anything` does not support circular references. They will cause a stack overflow stack overflow. 
+Currently, `hash-anything` does not support circular references. They will cause a stack overflow error. 
 
 ### Note on New Types ###
-When a new built-in type is added to Javascript, `hash-anything` should be updated to support it specifically. Otherwise, the new type will be treated like any other user-defined objects. This may not produce ideal results..
+When a new built-in type is added to Javascript, `hash-anything` usually needs be updated to support it. Otherwise, the new type will be treated like any other user-defined objects. This may not produce ideal results..
