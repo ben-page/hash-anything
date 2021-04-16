@@ -30,8 +30,8 @@
     "build": "npm run uglify"
   },
   "devDependencies": {
-    "browserify": "^16.5.1",
-    "jest": "^26.0.1",
+    "browserify": "^17.0.0",
+    "jest": "^26.6.3",
     "uglify-es": "^3.3.9",
     "xxhash": "^0.3.0"
   }
